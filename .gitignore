@@ -7,4 +7,7 @@ node_modules
 .cdk.staging
 cdk.out
 
+# TypeScript build output
+lib/
+
 .plans
