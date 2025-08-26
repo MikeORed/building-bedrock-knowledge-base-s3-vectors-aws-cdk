@@ -1,7 +1,7 @@
 # Building a Bedrock Knowledge Base with **S3 Vectors** (AWS CDK, TypeScript)
 
 This repository accompanies the blog post **"Bedrock Knowledge Bases with S3 Vectors: A [Preview] CDK Quickstart"** — read the "why" and deeper design notes there:  
-PLACEHOLDERIAMPLACEHOLDER
+[Ye Olde Blog Post](https://dev.to/michael_flanagan_red/bedrock-knowledge-bases-with-s3-vectors-a-preview-cdk-quickstart-1d8p)
 
 **What this repo gives you:** a reproducible CDK construct that deploys a Bedrock Knowledge Base backed by **Amazon S3 Vectors (preview)** with optional foundation-model parsing and a **teardown finalizer** that deletes resources in the correct order.
 
