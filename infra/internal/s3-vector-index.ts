@@ -47,6 +47,11 @@ export class S3VectorIndex extends Construct {
           dataType: props.dataType ?? "float32",
           dimension: props.dimension,
           distanceMetric: props.distanceMetric ?? "cosine",
+          metadataConfiguration: {
+            nonFilterableMetadataKeys: [
+              "AMAZON_BEDROCK_TEXT", //for s3 vectors this is effectively required, read further: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-setup.html
+            ],
+          },
         },
         physicalResourceId: PhysicalResourceId.of(
           `s3vectors-index-${props.indexName}`
