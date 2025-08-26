@@ -14,6 +14,7 @@ import {
   createS3BucketPolicy,
   createBedrockInvokePolicy,
   createS3VectorsDataPlanePolicy,
+  createS3VectorsControlPlanePolicy,
   createCloudWatchLogsPolicy,
 } from "../util/iam";
 
@@ -261,6 +262,9 @@ export class S3ToS3VectorsKnowledgeBase extends Construct {
     // S3 Vectors data-plane operations using utility
     // TODO: Use specific index ARN when GA supports resource-scoped permissions
     role.addToPolicy(createS3VectorsDataPlanePolicy());
+
+    // S3 Vectors control-plane operations for Knowledge Base validation
+    role.addToPolicy(createS3VectorsControlPlanePolicy());
 
     // CloudWatch Logs permissions using utility
     role.addToPolicy(createCloudWatchLogsPolicy(stack.region, stack.account));

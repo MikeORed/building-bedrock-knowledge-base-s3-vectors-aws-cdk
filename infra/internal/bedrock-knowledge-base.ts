@@ -7,7 +7,6 @@ import {
   PhysicalResourceIdReference,
 } from "aws-cdk-lib/custom-resources";
 import { Construct } from "constructs";
-import { createBedrockKnowledgeBasePolicy } from "../util/iam";
 
 /**
  * Properties for BedrockKnowledgeBase construct
@@ -29,7 +28,7 @@ export interface BedrockKnowledgeBaseProps {
 
 /**
  * Internal construct that wraps Bedrock Knowledge Base creation/deletion
- * Uses AWS SDK v3 service names and removes unnecessary installLatestAwsSdk
+ * Uses AwsCustomResourcePolicy to attach permissions to the singleton provider
  */
 export class BedrockKnowledgeBase extends Construct {
   public readonly knowledgeBaseId: string;
@@ -42,8 +41,26 @@ export class BedrockKnowledgeBase extends Construct {
     const stack = cdk.Stack.of(this);
 
     this.customResource = new AwsCustomResource(this, "Resource", {
+      installLatestAwsSdk: true,
+      policy: AwsCustomResourcePolicy.fromStatements([
+        new iam.PolicyStatement({
+          sid: "BedrockKnowledgeBaseManagement",
+          actions: [
+            "bedrock:CreateKnowledgeBase",
+            "bedrock:GetKnowledgeBase",
+            "bedrock:UpdateKnowledgeBase",
+            "bedrock:DeleteKnowledgeBase",
+          ],
+          resources: ["*"],
+        }),
+        new iam.PolicyStatement({
+          sid: "PassRole",
+          actions: ["iam:PassRole"],
+          resources: [props.role.roleArn],
+        }),
+      ]),
       onCreate: {
-        service: "bedrock-agent", // Use SDK v3 service name
+        service: "@aws-sdk/client-bedrock-agent", // Use SDK v3 service name
         action: "createKnowledgeBase",
         parameters: {
           name: props.name,
@@ -77,7 +94,7 @@ export class BedrockKnowledgeBase extends Construct {
         ],
       },
       onUpdate: {
-        service: "bedrock-agent",
+        service: "@aws-sdk/client-bedrock-agent",
         action: "getKnowledgeBase",
         parameters: {
           knowledgeBaseId: new PhysicalResourceIdReference(),
@@ -88,7 +105,7 @@ export class BedrockKnowledgeBase extends Construct {
         ],
       },
       onDelete: {
-        service: "bedrock-agent",
+        service: "@aws-sdk/client-bedrock-agent",
         action: "deleteKnowledgeBase",
         parameters: {
           knowledgeBaseId: new PhysicalResourceIdReference(),
@@ -96,14 +113,6 @@ export class BedrockKnowledgeBase extends Construct {
         ignoreErrorCodesMatching:
           "ResourceNotFoundException|NotFound|ConflictException",
       },
-      policy: AwsCustomResourcePolicy.fromStatements([
-        createBedrockKnowledgeBasePolicy(),
-        new iam.PolicyStatement({
-          sid: "PassRole",
-          actions: ["iam:PassRole"],
-          resources: [props.role.roleArn],
-        }),
-      ]),
       timeout: cdk.Duration.minutes(10),
     });
 

@@ -38,6 +38,7 @@ export class S3VectorIndex extends Construct {
     this.indexArn = `${props.vectorBucketArn}/index/${props.indexName}`;
 
     new AwsCustomResource(this, "Resource", {
+      installLatestAwsSdk: true,
       onCreate: {
         service: "s3vectors", // Use SDK v3 service name
         action: "createIndex",
@@ -58,8 +59,7 @@ export class S3VectorIndex extends Construct {
         service: "s3vectors",
         action: "deleteIndex",
         parameters: {
-          vectorBucketArn: props.vectorBucketArn,
-          indexName: props.indexName,
+          indexArn: this.indexArn,
         },
         ignoreErrorCodesMatching:
           "ResourceNotFoundException|NoSuchIndex|ThrottlingException|TooManyRequestsException",
