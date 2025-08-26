@@ -35,7 +35,7 @@ export class S3VectorBucket extends Construct {
     new AwsCustomResource(this, "Resource", {
       installLatestAwsSdk: true,
       onCreate: {
-        service: "@aws-sdk/client-s3vectors", // Use SDK v3 service name
+        service: "s3vectors", // Use consistent service name
         action: "createVectorBucket",
         parameters: {
           vectorBucketName: props.bucketName,
@@ -47,7 +47,7 @@ export class S3VectorBucket extends Construct {
           "ConflictException|ResourceAlreadyExistsException|ThrottlingException|TooManyRequestsException",
       },
       onDelete: {
-        service: "@aws-sdk/client-s3vectors",
+        service: "s3vectors", // Use consistent service name
         action: "deleteVectorBucket",
         parameters: {
           vectorBucketArn: this.bucketArn,

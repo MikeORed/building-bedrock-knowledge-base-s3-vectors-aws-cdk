@@ -66,6 +66,8 @@ export function createS3VectorsDataPlanePolicy(
   ];
 
   // TODO: Use resource-scoped permissions when S3 Vectors GA supports them
+  // Watch the Service Authorization Reference for resource types:
+  // https://docs.aws.amazon.com/service-authorization/latest/reference/list_amazons3vectors.html
   // For now, S3 Vectors data-plane operations require resources: ['*']
   const resources = indexArn ? [indexArn] : ["*"];
 

@@ -24,6 +24,8 @@ export interface BedrockKnowledgeBaseProps {
   readonly embeddingModelArn: string;
   /** Vector dimension */
   readonly vectorDimension: number;
+  /** Embedding data type (default: FLOAT32, uppercase required by Bedrock API) */
+  readonly embeddingDataType?: "FLOAT32" | "BINARY";
 }
 
 /**
@@ -72,6 +74,7 @@ export class BedrockKnowledgeBase extends Construct {
               embeddingModelConfiguration: {
                 bedrockEmbeddingModelConfiguration: {
                   dimensions: props.vectorDimension,
+                  embeddingDataType: props.embeddingDataType ?? "FLOAT32",
                 },
               },
             },

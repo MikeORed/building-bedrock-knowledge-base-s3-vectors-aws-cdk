@@ -17,8 +17,8 @@ export interface S3VectorIndexProps {
   readonly indexName: string;
   /** Vector dimension */
   readonly dimension: number;
-  /** Distance metric for similarity search */
-  readonly distanceMetric?: "cosine" | "euclidean" | "dotProduct";
+  /** Distance metric for similarity search - S3 Vectors supports euclidean | cosine only */
+  readonly distanceMetric?: "cosine" | "euclidean";
   /** Data type for vectors */
   readonly dataType?: "float32";
 }

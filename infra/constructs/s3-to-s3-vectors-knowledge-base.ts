@@ -50,14 +50,18 @@ export interface S3ToS3VectorsKnowledgeBaseProps extends NameOverrides {
   readonly parsingPromptText?: string;
 
   // Future-proofing (optional)
-  /** Distance metric for similarity search (default: cosine) */
-  readonly distanceMetric?: "cosine" | "euclidean" | "dotProduct";
+  /** Distance metric for similarity search (default: cosine) - S3 Vectors supports euclidean | cosine only */
+  readonly distanceMetric?: "cosine" | "euclidean";
   /** Data type for vectors (default: float32) */
   readonly dataType?: "float32";
+  /** Embedding data type for Knowledge Base (default: FLOAT32, uppercase required by Bedrock API) */
+  readonly embeddingDataType?: "FLOAT32" | "BINARY";
 
   // Lifecycle
   /** Deletion behavior - DELETE (default) or RETAIN */
   readonly deletionBehavior?: DeletionBehavior;
+  /** Data deletion policy for DataSource - DELETE (default) or RETAIN */
+  readonly dataDeletionPolicy?: "DELETE" | "RETAIN";
 
   // Advanced overrides
   /** Optional: provide a role; otherwise construct creates a least-privilege role for KB */
@@ -74,7 +78,7 @@ export interface S3ToS3VectorsKnowledgeBaseProps extends NameOverrides {
  * - IAM role with least-privilege permissions
  * - S3 Vectors bucket and index via internal constructs
  * - Bedrock Knowledge Base via internal construct
- * - Bedrock DataSource via CfnDataSource
+ * - Bedrock DataSource via CfnDataSource with configurable data deletion policy
  * - Lambda-based cleanup finalizer for proper resource deletion order
  *
  * Key Features:
@@ -82,7 +86,17 @@ export interface S3ToS3VectorsKnowledgeBaseProps extends NameOverrides {
  * - Supports both native and foundation model parsing
  * - Proper cleanup handling for S3 Vectors resources
  * - Configurable vector dimensions and model selection
+ * - Data deletion policy support (DELETE/RETAIN) to prevent teardown failures
+ * - Embedding data type alignment between Knowledge Base and S3 Vectors index
  * - Modular design with utilities and internal constructs
+ *
+ * Deletion Behavior:
+ * - dataDeletionPolicy: Controls whether vectors are purged from storage on DataSource deletion
+ *   - DELETE (default): Attempts to purge vectors, may fail if vectors can't be deleted
+ *   - RETAIN: Leaves vectors in storage, allows clean stack deletion
+ * - deletionBehavior: Controls overall resource cleanup via Lambda finalizer
+ *   - DELETE (default): Cleans up all resources in proper order
+ *   - RETAIN: Leaves resources behind (useful for CI/CD scenarios)
  */
 export class S3ToS3VectorsKnowledgeBase extends Construct {
   public readonly knowledgeBaseId: string;
@@ -108,6 +122,8 @@ export class S3ToS3VectorsKnowledgeBase extends Construct {
     const vectorDimension = props?.vectorDimension ?? 1024;
     const useFoundationParsing = props?.useFoundationParsing ?? false;
     const deletionBehavior = props?.deletionBehavior ?? "DELETE";
+    const dataDeletionPolicy = props?.dataDeletionPolicy ?? "DELETE";
+    const embeddingDataType = props?.embeddingDataType ?? "FLOAT32";
 
     const embeddingModelArn = resolveEmbeddingModelArn(
       stack.region,
@@ -158,6 +174,7 @@ export class S3ToS3VectorsKnowledgeBase extends Construct {
       indexArn: vectorIndex.indexArn,
       embeddingModelArn,
       vectorDimension,
+      embeddingDataType,
     });
 
     // Create DataSource
@@ -168,7 +185,8 @@ export class S3ToS3VectorsKnowledgeBase extends Construct {
       inclusionPrefixes,
       useFoundationParsing,
       parsingModelArn,
-      props?.parsingPromptText
+      props?.parsingPromptText,
+      dataDeletionPolicy
     );
 
     // Create cleanup finalizer
@@ -282,7 +300,8 @@ export class S3ToS3VectorsKnowledgeBase extends Construct {
     inclusionPrefixes: string[],
     useFoundationParsing: boolean,
     parsingModelArn: string,
-    parsingPromptText?: string
+    parsingPromptText: string | undefined,
+    dataDeletionPolicy: "DELETE" | "RETAIN"
   ): bedrock.CfnDataSource {
     // Optional foundation model parsing configuration
     const maybeParsing = useFoundationParsing
@@ -303,6 +322,7 @@ export class S3ToS3VectorsKnowledgeBase extends Construct {
       name: dataSourceName,
       description: `S3 data source for Knowledge Base - ${dataSourceName}`,
       knowledgeBaseId: knowledgeBase.knowledgeBaseId,
+      dataDeletionPolicy: dataDeletionPolicy,
       dataSourceConfiguration: {
         type: "S3",
         s3Configuration: {
