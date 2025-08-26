@@ -45,7 +45,6 @@ export class CleanupFinalizer extends Construct {
     const stack = cdk.Stack.of(this);
     const deletionBehavior = props.deletionBehavior ?? "DELETE";
 
-    // Create Lambda function for cleanup using NodejsFunction for TypeScript compilation
     const logGroup = new logs.LogGroup(this, "CleanupFnLogs", {
       retention: logs.RetentionDays.ONE_MONTH,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -60,9 +59,7 @@ export class CleanupFinalizer extends Construct {
       memorySize: 256,
       description:
         "Cleanup finalizer for Bedrock Knowledge Base and DataSource",
-      bundling: {
-        // Bundle AWS SDK v3 client (do NOT set externalModules for @aws-sdk/*)
-      },
+      bundling: {},
     });
 
     // Grant cleanup function permissions

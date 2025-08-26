@@ -30,7 +30,6 @@ export interface BedrockKnowledgeBaseProps {
 
 /**
  * Internal construct that wraps Bedrock Knowledge Base creation/deletion
- * Uses AwsCustomResourcePolicy to attach permissions to the singleton provider
  */
 export class BedrockKnowledgeBase extends Construct {
   public readonly knowledgeBaseId: string;
@@ -62,7 +61,7 @@ export class BedrockKnowledgeBase extends Construct {
         }),
       ]),
       onCreate: {
-        service: "@aws-sdk/client-bedrock-agent", // Use SDK v3 service name
+        service: "@aws-sdk/client-bedrock-agent",
         action: "createKnowledgeBase",
         parameters: {
           name: props.name,

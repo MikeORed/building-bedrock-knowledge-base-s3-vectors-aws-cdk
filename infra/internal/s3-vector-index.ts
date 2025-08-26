@@ -25,7 +25,6 @@ export interface S3VectorIndexProps {
 
 /**
  * Internal construct that wraps S3 Vectors index creation/deletion
- * Uses AWS SDK v3 service names and removes unnecessary installLatestAwsSdk
  */
 export class S3VectorIndex extends Construct {
   public readonly indexName: string;
@@ -40,7 +39,7 @@ export class S3VectorIndex extends Construct {
     new AwsCustomResource(this, "Resource", {
       installLatestAwsSdk: true,
       onCreate: {
-        service: "s3vectors", // Use SDK v3 service name
+        service: "s3vectors",
         action: "createIndex",
         parameters: {
           vectorBucketArn: props.vectorBucketArn,

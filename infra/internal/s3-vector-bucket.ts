@@ -17,7 +17,6 @@ export interface S3VectorBucketProps {
 
 /**
  * Internal construct that wraps S3 Vectors bucket creation/deletion
- * Uses AWS SDK v3 service names and removes unnecessary installLatestAwsSdk
  */
 export class S3VectorBucket extends Construct {
   public readonly bucketName: string;
@@ -28,14 +27,13 @@ export class S3VectorBucket extends Construct {
 
     this.bucketName = props.bucketName;
 
-    // Build deterministic ARN
     const stack = cdk.Stack.of(this);
     this.bucketArn = `arn:aws:s3vectors:${stack.region}:${stack.account}:bucket/${props.bucketName}`;
 
     new AwsCustomResource(this, "Resource", {
       installLatestAwsSdk: true,
       onCreate: {
-        service: "s3vectors", // Use consistent service name
+        service: "s3vectors",
         action: "createVectorBucket",
         parameters: {
           vectorBucketName: props.bucketName,
@@ -47,7 +45,7 @@ export class S3VectorBucket extends Construct {
           "ConflictException|ResourceAlreadyExistsException|ThrottlingException|TooManyRequestsException",
       },
       onDelete: {
-        service: "s3vectors", // Use consistent service name
+        service: "s3vectors",
         action: "deleteVectorBucket",
         parameters: {
           vectorBucketArn: this.bucketArn,
