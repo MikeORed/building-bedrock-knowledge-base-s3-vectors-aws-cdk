@@ -104,7 +104,7 @@ flowchart TB
   A[Ingestion S3 Bucket<br/>prefix: docs/]:::aws
   B[[S3 Vectors Bucket]]:::aws
   C[(S3 Vectors Index)]:::aws
-  D{{Bedrock Knowledge Base<br/>(VECTOR)}}:::aws
+  D{{Bedrock Knowledge Base</br>-VECTOR-}}:::aws
   E[(Data Source: S3<br/>+ chunking + optional parsing)]:::aws
   F{{Cleanup Finalizer<br/>Lambda + CR}}:::aws
 
